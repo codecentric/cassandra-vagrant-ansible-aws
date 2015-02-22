@@ -1,0 +1,19 @@
+# Insert your information for your AWS account in here
+
+# Basic key/secret access to AWS
+key: KEY
+secret: SECRET
+
+# Naming (each node will be prefixed with this and suffixed with the number of the node)
+node_name_prefix: cassandra-node-
+
+# Cassandra topology and coupled to this, AWS access/machine information (which is region specific)
+
+datacenters:
+  -
+    region: AWSREGION # The region to setup the nodes eg. us-west-1
+    number_of_nodes: NUMBEROFNODES # eg. 5
+    instance_type: INSTANCETYPE # The type of AWS instance to create eg. m3.large
+    ami: AMIIDENTIFIER # The image to use for the box which must be available in the region eg. ami-fa5843bf, for ubuntu use http://cloud-images.ubuntu.com/locator/ec2/
+    keyname: KEYNAME
+    keypath: PATH TO PRIVATE KEY PEM FILE

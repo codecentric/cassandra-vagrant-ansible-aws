@@ -1,5 +1,8 @@
 # Do not commit aws-credentials
-aws-config.yaml
+aws-config.yml
+
+# Do not commit vagrant stuff
+.vagrant
 
 # OS X Settings Based on MIT licensed https://github.com/github/gitignore/blob/master/Global/OSX.gitignore
 

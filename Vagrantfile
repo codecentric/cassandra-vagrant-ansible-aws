@@ -3,11 +3,7 @@
 
 #Require aws credentials
 require 'yaml'
-aws_credentials = YAML::load_file("#{File.dirname(File.expand_path(__FILE__))}/aws-credentials.yaml")
-
-#Cluster Topology
-DATACENTER_REGIONS = ["us-west-1"]
-NODES_PER_DATACENTER = 5
+aws_config = YAML::load_file("#{File.dirname(File.expand_path(__FILE__))}/aws-config.yaml")
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
@@ -21,33 +17,34 @@ Vagrant.configure(2) do |config|
   # Every Vagrant development environment requires a bonode. You can search for
   # boxes at https://atlas.hashicorp.com/search.
   
-  DATACENTER_REGIONS.each do |datacenter_region|
+  aws_config["datacenters"].each do |datacenter_info|
     
-    NODES_PER_DATACENTER.times do |node_number|
+    datacenter_info["number_of_nodes"].times do |node_number|
     
-      nodename = "cassandra-node-#{node_number}"
+      node_name = aws_config["node_name_prefix"] + "-" + datacenter_info["region"] + "-" + node_number.to_s
     
-      config.vm.define(nodename) do |node|  
+      config.vm.define(node_name) do |node|  
       
           node.vm.box = "hashicorp/precise64"
-          node.vm.hostname = nodename
+          node.vm.hostname = node_name
 
           node.vm.provider :virtualbox do |v|
-            v.name = nodename
+            v.name = node_name
           end
 
           node.vm.provider :aws do |aws, override|
-            aws.access_key_id = aws_credentials["key"]
-            aws.secret_access_key = aws_credentials["secret"]
-            aws.keypair_name = aws_credentials["keyname"]
+            aws.access_key_id = aws_config["key"]
+            aws.secret_access_key = aws_config["secret"]
+            
+            aws.keypair_name = datacenter_info["keyname"]
         
-            aws.ami = "ami-fa5843bf" #ubuntu 12.04.5 LTS x64 hvm-ssd in us-west-1
-            aws.region = datacenter_region
-            aws.instance_type = "m3.large"
+            aws.ami = datacenter_info["ami"]
+            aws.region = datacenter_info["region"]
+            aws.instance_type = datacenter_info["instance_type"]
 
             override.vm.box = "dummy"
             override.ssh.username = "ubuntu"
-            override.ssh.private_key_path = aws_credentials["keypath"]
+            override.ssh.private_key_path = datacenter_info["keypath"]
           end
         end
     
