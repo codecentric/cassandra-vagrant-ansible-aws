@@ -3,7 +3,8 @@
   apt: name=libjna-java update_cache=yes state=latest
   
 # Check whether cassandra is already installed
-- stat: path=/opt/cassandra
+- name: Detect existing Cassandra installation at /opt/cassandra
+  stat: path=/opt/cassandra
   register: state_of_cassandra_installation
 
 # Cassandra download and installation
@@ -15,13 +16,13 @@
   unarchive: src=/tmp/cassandra.tar.gz dest=/opt copy=no
   when: state_of_cassandra_installation.stat.isdir is undefined
 
-- name: Rename Cassandra Location
-  shell: "mv apache-cassandra-2.1.3 cassandra chdir=/opt"
+- name: Link Cassandra to /opt/cassandra
+  file: "src=/opt/apache-cassandra-2.1.3 dest=/opt/cassandra state=link owner=ubuntu group=ubuntu"
   when: state_of_cassandra_installation.stat.isdir is undefined
 
 # Folder setup
-- name: Create Cassandra Data and Log Directories
-  file: "path={{ item }} state=directory"
+- name: Create Cassandra data and log directories
+  file: "path={{ item }} state=directory owner=ubuntu group=ubuntu"
   with_items:
     - /var/log/cassandra
     - /mnt/cassandra/data
@@ -35,9 +36,22 @@
     - jna.jar
     - jna-platform.jar
 
-- name: Copy Cassandra Configuration
+- name: Copy Cassandra configuration files
   template: src={{ item }}.j2 dest=/opt/cassandra/conf/{{ item }}
   with_items:
     - cassandra-env.sh
     - cassandra.yaml
     - logback.xml
+
+# Owner/Group Security
+- name: Set user/group on Cassandra installation
+  file: path=/opt/apache-cassandra-2.1.3 recurse=yes owner=ubuntu group=ubuntu
+  
+- name: Deploy Cassandra init.d script
+  template: src=cassandra.j2 dest=/etc/init.d/cassandra mode=u=rwx,g=rx,o=rx
+  
+- name: Register Cassandra service for boot-time launch
+  shell: update-rc.d cassandra defaults
+  
+- name: Launch Cassandra
+  service: name=cassandra state=started

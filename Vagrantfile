@@ -11,15 +11,16 @@ aws_config = YAML::load_file("#{File.dirname(File.expand_path(__FILE__))}/aws-co
 # you're doing.
 Vagrant.configure(2) do |config|
   
-  # Use ansible for provisioning
-  config.vm.provision :ansible, :playbook => 'ansible/ansible-playbook.yml'
+  all_created_cassandra_nodes = []
   
   aws_config["datacenters"].each do |datacenter_info|
     
     datacenter_info["number_of_nodes"].times do |node_number|
-    
-      node_name = aws_config["node_name_prefix"] + "-" + datacenter_info["region"] + "-" + node_number.to_s
-    
+      
+      node_name = ( aws_config["node_name_prefix"] ? aws_config["node_name_prefix"] + "-" : "" ) + "cassandra-" + datacenter_info["region"] + "-" + node_number.to_s
+      
+      all_created_cassandra_nodes << node_name
+      
       config.vm.define(node_name) do |node|  
       
           node.vm.box = "ubuntu/trusty64"
@@ -48,6 +49,17 @@ Vagrant.configure(2) do |config|
     
     end
   end
+  
+  # Use ansible for provisioning
+  config.vm.provision :ansible do |ansible|
+    ansible.playbook = 'ansible/ansible-playbook.yml'
+    ansible.groups = {
+      "cassandra_nodes" => all_created_cassandra_nodes,
+      "all:children" => ["cassandra_nodes"]
+    }
+    ansible.extra_vars = {}
+  end
+ 
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
