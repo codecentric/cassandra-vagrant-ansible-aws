@@ -50,15 +50,54 @@ Vagrant.configure(2) do |config|
     end
   end
   
-  # Use ansible for provisioning
-  config.vm.provision :ansible do |ansible|
-    ansible.playbook = 'ansible/ansible-playbook.yml'
-    ansible.groups = {
-      "cassandra_nodes" => all_created_cassandra_nodes,
-      "all:children" => ["cassandra_nodes"]
-    }
-    ansible.extra_vars = {}
+  # OpsCenter Node
+  
+  opscenter_info = aws_config["opscenter"]
+  
+  config.vm.define(opscenter_info["node_name"]) do |node|  
+  
+    node.vm.box = "ubuntu/trusty64"
+    node.vm.hostname = opscenter_info["node_name"]
+
+    node.vm.provider :virtualbox do |v|
+      v.name = opscenter_info["node_name"]
+    end
+
+    node.vm.provider :aws do |aws, override|
+      aws.access_key_id = aws_config["key"]
+      aws.secret_access_key = aws_config["secret"]
+      
+      aws.keypair_name = opscenter_info["keyname"]
+  
+      aws.ami = opscenter_info["ami"]
+      aws.region = opscenter_info["region"]
+      aws.instance_type = opscenter_info["instance_type"]
+      aws.security_groups = ["default", opscenter_info["security_group"]]
+
+      override.vm.box = "dummy"
+      override.ssh.username = "ubuntu"
+      override.ssh.private_key_path = opscenter_info["keypath"]
+    end
+    
+    # Use ansible for provisioning
+    # Note that this is in the config section for the opscenter node so that provisoning
+    # happpens only once and using ansible.limit = 'all' makes ansible provision all nodes
+    # simultaniously
+    config.vm.provision :ansible do |ansible|
+      ansible.playbook = 'ansible/ansible-playbook.yml'
+      ansible.limit = 'all'
+      ansible.groups = {
+        "cassandra_nodes" => all_created_cassandra_nodes,
+        "opscenter_node" => [opscenter_info["node_name"]],
+        "all:children" => ["cassandra_nodes", "opscenter_node"]
+      }
+      ansible.extra_vars = {}
+    end
+    
+    
   end
+  
+  
  
 
   # Disable automatic box update checking. If you disable this, then
