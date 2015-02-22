@@ -1,4 +1,7 @@
-# Based on MIT licensed https://github.com/github/gitignore/blob/master/Global/OSX.gitignore
+# Do not commit aws-credentials
+aws-credentials.yaml
+
+# OS X Settings Based on MIT licensed https://github.com/github/gitignore/blob/master/Global/OSX.gitignore
 
 .DS_Store
 .AppleDouble
