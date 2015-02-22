@@ -1,0 +1,43 @@
+---
+- name: Install JNA
+  apt: name=libjna-java update_cache=yes state=latest
+  
+# Check whether cassandra is already installed
+- stat: path=/opt/cassandra
+  register: state_of_cassandra_installation
+
+# Cassandra download and installation
+- name: Download Cassandra
+  get_url: url=http://www.gtlib.gatech.edu/pub/apache/cassandra/2.1.3/apache-cassandra-2.1.3-bin.tar.gz dest=/tmp/cassandra.tar.gz
+  when: state_of_cassandra_installation.stat.isdir is undefined
+
+- name: Unpack Cassandra
+  unarchive: src=/tmp/cassandra.tar.gz dest=/opt copy=no
+  when: state_of_cassandra_installation.stat.isdir is undefined
+
+- name: Rename Cassandra Location
+  shell: "mv apache-cassandra-2.1.3 cassandra chdir=/opt"
+  when: state_of_cassandra_installation.stat.isdir is undefined
+
+# Folder setup
+- name: Create Cassandra Data and Log Directories
+  file: "path={{ item }} state=directory"
+  with_items:
+    - /var/log/cassandra
+    - /mnt/cassandra/data
+    - /mnt/cassandra/commitlog
+    - /mnt/cassandra/saved_caches
+
+# Dependency setup and configuration
+- name: Link JNA
+  file: "src=/usr/share/java/{{ item }} dest=/opt/cassandra/lib/{{ item }} state=link"
+  with_items:
+    - jna.jar
+    - jna-platform.jar
+
+- name: Copy Cassandra Configuration
+  template: src={{ item }}.j2 dest=/opt/cassandra/conf/{{ item }}
+  with_items:
+    - cassandra-env.sh
+    - cassandra.yaml
+    - logback.xml

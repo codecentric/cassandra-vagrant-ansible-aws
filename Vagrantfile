@@ -3,19 +3,16 @@
 
 #Require aws credentials
 require 'yaml'
-aws_config = YAML::load_file("#{File.dirname(File.expand_path(__FILE__))}/aws-config.yaml")
+aws_config = YAML::load_file("#{File.dirname(File.expand_path(__FILE__))}/aws-config.yml")
 
 # All Vagrant configuration is done below. The "2" in Vagrant.configure
 # configures the configuration version (we support older styles for
 # backwards compatibility). Please don't change it unless you know what
 # you're doing.
 Vagrant.configure(2) do |config|
-  # The most common configuration options are documented and commented below.
-  # For a complete reference, please see the online documentation at
-  # https://docs.vagrantup.com.
-
-  # Every Vagrant development environment requires a bonode. You can search for
-  # boxes at https://atlas.hashicorp.com/search.
+  
+  # Use ansible for provisioning
+  config.vm.provision :ansible, :playbook => 'ansible/ansible-playbook.yml'
   
   aws_config["datacenters"].each do |datacenter_info|
     
@@ -25,7 +22,7 @@ Vagrant.configure(2) do |config|
     
       config.vm.define(node_name) do |node|  
       
-          node.vm.box = "hashicorp/precise64"
+          node.vm.box = "ubuntu/trusty64"
           node.vm.hostname = node_name
 
           node.vm.provider :virtualbox do |v|
@@ -41,6 +38,7 @@ Vagrant.configure(2) do |config|
             aws.ami = datacenter_info["ami"]
             aws.region = datacenter_info["region"]
             aws.instance_type = datacenter_info["instance_type"]
+            aws.security_groups = ["default", datacenter_info["security_group"]]
 
             override.vm.box = "dummy"
             override.ssh.username = "ubuntu"
