@@ -61,6 +61,7 @@
 - name: Copy authentication setup script
   template: src={{ item }}.j2 dest=/opt/cassandra/{{ item }} mode=600 owner=root group=root
   with_items:
+    - check_connection.cql
     - setup_authentication.cql
     - disable_default_user.cql
   run_once: true
@@ -68,20 +69,29 @@
 - pause: minutes=1 #wait for 1 minute to let the cluster come up
   run_once: true
 
+- name: Check if new authentication setup is already done
+  shell: /opt/cassandra/bin/cqlsh -f /opt/cassandra/check_connection.cql -u {{ cluster_username }} -p {{ cluster_password }}
+  register: state_of_authentication_setup
+  ignore_errors: true
+  run_once: true
+
 - name: Setup new user/password
   shell: /opt/cassandra/bin/cqlsh -f /opt/cassandra/setup_authentication.cql -u cassandra -p cassandra
+  when: state_of_authentication_setup|failed
   run_once: true
   
 - name: Disable default user/password
   shell: /opt/cassandra/bin/cqlsh -f /opt/cassandra/disable_default_user.cql -u {{ cluster_username }} -p {{ cluster_password }}
+  when: state_of_authentication_setup|failed
   run_once: true
 
 - name: Remove authentication setup script
   file: path=/opt/cassandra/{{ item }} state=absent
   with_items:
+    - check_connection.cql
     - setup_authentication.cql
     - disable_default_user.cql
   run_once: true
   
 - name: Run nodetool repair on all nodes to make sure authentication information is consistent
-  shell: /opt/cassandra/bin/nodetool repair
+  shell: /opt/cassandra/bin/nodetool repair -local
