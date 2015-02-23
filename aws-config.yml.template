@@ -3,6 +3,8 @@
 # Basic key/secret access to AWS
 key: KEY
 secret: SECRET
+keyname: KEYNAME
+keypath: PATH TO PRIVATE KEY
 
 # Naming node naming schema is #{node_name_prefix}[-]cassandra-#{region}-{number}
 node_name_prefix: 
@@ -12,9 +14,9 @@ cluster_name: AWSCluster
 # Note that your password in the opscenter config file in the clear.
 # It is recommended to change this in a secure manner once the cluster is deployed.
 # Also note that the default cassandara:cassandra superuser is stripped of superuser rights
-# and assigned a random password.
-cluster_username: cassandra
-cluster_password: d328rnaisf2784g
+# and assigned a random password. The username cannot be cassandra
+cluster_username: cas
+cluster_password: 123
 
 # Cassandra topology and coupled to this, AWS access/machine information (which is region specific)
 
@@ -24,8 +26,6 @@ datacenters:
     number_of_nodes: NUMBEROFNODES # eg. 5
     instance_type: INSTANCETYPE # The type of AWS instance to create eg. m3.large
     ami: AMIIDENTIFIER # The image to use for the box which must be available in the region eg. ami-fa5843bf, for ubuntu use http://cloud-images.ubuntu.com/locator/ec2/
-    keyname: KEYNAME
-    keypath: PATH TO PRIVATE KEY PEM FILE
     security_group: SECURITYGROUP THAT ALLOWS CASSANDRA DEFAULT PORTS
 
 # Configure a node to deploy opscenter to.
@@ -35,6 +35,4 @@ opscenter:
   region: us-west-1
   instance_type: t2.micro
   ami: AMI # The image to use for the box which must be available in the region eg. ami-fa5843bf, for ubuntu use http://cloud-images.ubuntu.com/locator/ec2/
-  keyname: KEYNAME
-  keypath: PATH TO PRIVATE KEY PEM FILE
   security_group: SECURITYGROUP THAT ALLOWS OPSCENTER COMMUNCATION #http://www.datastax.com/documentation/opscenter/4.0/opsc/reference/opscPorts_r.html WEBSERVER PORT IS CONFIGURED TO 80
