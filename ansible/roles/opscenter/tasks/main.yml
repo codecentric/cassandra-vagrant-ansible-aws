@@ -11,5 +11,11 @@
 - name: Deploy configuration
   template: src=opscenterd.conf.j2 dest=/etc/opscenter/opscenterd.conf
 
+- name: Make sure config folder exists
+  file: path=/etc/opscenter/clusters state=directory
+
+- name: Deploy pre-configured cluster configuration
+  template: "src=cluster_config.conf.j2 dest=/etc/opscenter/clusters/{{ cluster_name }}.conf mode=600 owner=root group=root"
+
 - name: Launch OpsCenter
   service: name=opscenterd state=started

@@ -262,7 +262,7 @@ seed_provider:
       parameters:
           # seeds is actually a comma-delimited list of addresses.
           # Ex: "<ip1>,<ip2>,<ip3>"
-          - seeds: "{% for host in groups['all'] %}{{ hostvars[host]['ansible_ssh_host'] }},{% endfor %}127.0.0.1" #changed to provide cluster topology
+          - seeds: "{% for host in groups['cassandra_nodes'] %}{{ hostvars[host]['ansible_ssh_host'] }},{% endfor %}127.0.0.1" #changed to provide cluster topology
 
 # For workloads with more data than can fit in memory, Cassandra's
 # bottleneck will be reads that need to fetch data from

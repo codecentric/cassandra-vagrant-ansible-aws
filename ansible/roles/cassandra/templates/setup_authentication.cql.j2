@@ -1,0 +1,4 @@
+ALTER KEYSPACE system_auth WITH REPLICATION =
+  {'class' : 'NetworkTopologyStrategy', {{ datacenter_max_replication_string }}};
+
+CREATE USER {{ cluster_username }} WITH PASSWORD '{{ cluster_password }}' SUPERUSER;

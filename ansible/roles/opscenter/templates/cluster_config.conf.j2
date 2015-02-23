@@ -1,0 +1,21 @@
+[jmx]
+username =
+password =
+port = 7199
+
+[kerberos_client_principals]
+
+[kerberos]
+
+[agents]
+
+[kerberos_hostnames]
+
+[kerberos_services]
+
+[cassandra]
+username = {{ cluster_username }}
+seed_hosts = {% for host in groups['cassandra_nodes'] %}{{ hostvars[host]['ansible_ssh_host'] }}{% if not loop.last %},{% endif %}{% endfor %}
+
+api_port = 9160
+password = {{ cluster_password }}

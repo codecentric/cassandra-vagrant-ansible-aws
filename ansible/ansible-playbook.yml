@@ -1,9 +1,10 @@
 ---
 
-- hosts: cassandra_nodes
-  roles:
-    - { role: cassandra, sudo: yes }
-
 - hosts: opscenter_node
   roles:
     - { role: opscenter, sudo: yes }
+
+- hosts: cassandra_nodes
+  roles:
+    - { role: cassandra, sudo: yes }
+    - { role: datastax-agent, sudo: yes }

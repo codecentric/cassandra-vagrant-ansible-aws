@@ -1,6 +1,8 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
+require 'securerandom'
+
 #Require aws credentials
 require 'yaml'
 aws_config = YAML::load_file("#{File.dirname(File.expand_path(__FILE__))}/aws-config.yml")
@@ -12,8 +14,12 @@ aws_config = YAML::load_file("#{File.dirname(File.expand_path(__FILE__))}/aws-co
 Vagrant.configure(2) do |config|
   
   all_created_cassandra_nodes = []
+  datacenter_and_nodes = {}
   
   aws_config["datacenters"].each do |datacenter_info|
+    
+    #create a hash like {us-west: 2, eu-central: 1}
+    datacenter_and_nodes[datacenter_info["region"][0..-3]] = datacenter_info["number_of_nodes"]
     
     datacenter_info["number_of_nodes"].times do |node_number|
       
@@ -25,7 +31,8 @@ Vagrant.configure(2) do |config|
       
           node.vm.box = "ubuntu/trusty64"
           node.vm.hostname = node_name
-
+          # node.vm.network "private_network", ip: "192.168.33." + (node_number + 2).to_s
+          
           node.vm.provider :virtualbox do |v|
             v.name = node_name
           end
@@ -34,7 +41,7 @@ Vagrant.configure(2) do |config|
             aws.access_key_id = aws_config["key"]
             aws.secret_access_key = aws_config["secret"]
             
-            aws.keypair_name = datacenter_info["keyname"]
+            aws.keypair_name = aws_config["keyname"]
         
             aws.ami = datacenter_info["ami"]
             aws.region = datacenter_info["region"]
@@ -43,7 +50,7 @@ Vagrant.configure(2) do |config|
 
             override.vm.box = "dummy"
             override.ssh.username = "ubuntu"
-            override.ssh.private_key_path = datacenter_info["keypath"]
+            override.ssh.private_key_path = aws_config["keypath"]
           end
         end
     
@@ -58,7 +65,8 @@ Vagrant.configure(2) do |config|
   
     node.vm.box = "ubuntu/trusty64"
     node.vm.hostname = opscenter_info["node_name"]
-
+    # node.vm.network "private_network", ip: "192.168.33.1"
+    
     node.vm.provider :virtualbox do |v|
       v.name = opscenter_info["node_name"]
     end
@@ -67,7 +75,7 @@ Vagrant.configure(2) do |config|
       aws.access_key_id = aws_config["key"]
       aws.secret_access_key = aws_config["secret"]
       
-      aws.keypair_name = opscenter_info["keyname"]
+      aws.keypair_name = aws_config["keyname"]
   
       aws.ami = opscenter_info["ami"]
       aws.region = opscenter_info["region"]
@@ -76,14 +84,14 @@ Vagrant.configure(2) do |config|
 
       override.vm.box = "dummy"
       override.ssh.username = "ubuntu"
-      override.ssh.private_key_path = opscenter_info["keypath"]
+      override.ssh.private_key_path = aws_config["keypath"]
     end
     
     # Use ansible for provisioning
     # Note that this is in the config section for the opscenter node so that provisoning
     # happpens only once and using ansible.limit = 'all' makes ansible provision all nodes
     # simultaniously
-    config.vm.provision :ansible do |ansible|
+    node.vm.provision :ansible do |ansible|
       ansible.playbook = 'ansible/ansible-playbook.yml'
       ansible.limit = 'all'
       ansible.groups = {
@@ -91,14 +99,21 @@ Vagrant.configure(2) do |config|
         "opscenter_node" => [opscenter_info["node_name"]],
         "all:children" => ["cassandra_nodes", "opscenter_node"]
       }
-      ansible.extra_vars = {}
+      ansible.extra_vars = {
+        "cluster_name" => aws_config["cluster_name"],
+        "cluster_username" => aws_config["cluster_username"],
+        "cluster_password" => aws_config["cluster_password"],
+        "datacenter_max_replication_string" => datacenter_and_nodes.map { |k,v| "'#{k}' : #{v}" }.join(", "),
+        "random_new_password" => SecureRandom.hex
+      }
     end
-    
     
   end
   
-  
- 
+  # also disable deploying unique ssh keys to each machine
+  # which will break ansible in the current config
+  # this is not used when using aws anyhow
+  config.ssh.insert_key = false
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs

@@ -7,6 +7,15 @@ secret: SECRET
 # Naming node naming schema is #{node_name_prefix}[-]cassandra-#{region}-{number}
 node_name_prefix: 
 
+# Use [A-Z][a-z]-_ and no other chars as this is used for file names.
+cluster_name: AWSCluster
+# Note that your password in the opscenter config file in the clear.
+# It is recommended to change this in a secure manner once the cluster is deployed.
+# Also note that the default cassandara:cassandra superuser is stripped of superuser rights
+# and assigned a random password.
+cluster_username: cassandra
+cluster_password: d328rnaisf2784g
+
 # Cassandra topology and coupled to this, AWS access/machine information (which is region specific)
 
 datacenters:
