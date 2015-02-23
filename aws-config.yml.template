@@ -18,3 +18,14 @@ datacenters:
     keyname: KEYNAME
     keypath: PATH TO PRIVATE KEY PEM FILE
     security_group: SECURITYGROUP THAT ALLOWS CASSANDRA DEFAULT PORTS
+
+# Configure a node to deploy opscenter to.
+
+opscenter:
+  node_name: cassandra-opscenter
+  region: us-west-1
+  instance_type: t2.micro
+  ami: AMI # The image to use for the box which must be available in the region eg. ami-fa5843bf, for ubuntu use http://cloud-images.ubuntu.com/locator/ec2/
+  keyname: KEYNAME
+  keypath: PATH TO PRIVATE KEY PEM FILE
+  security_group: SECURITYGROUP THAT ALLOWS OPSCENTER COMMUNCATION #http://www.datastax.com/documentation/opscenter/4.0/opsc/reference/opscPorts_r.html WEBSERVER PORT IS CONFIGURED TO 80

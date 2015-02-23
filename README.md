@@ -1,4 +1,4 @@
-# Vagrant + Ansible + AWS Cassandra Setup
+# Vagrant + Ansible + AWS Cassandra Setup - WORK IN PROGRESS
 
 This project aims to `vagrant up` a multi-node/multi-datacenter Apache Cassandra ready-to-use production-grade cluster within Amazon's EC2 cloud. Configure and `vagrant up --provider=aws` to get going.
 
