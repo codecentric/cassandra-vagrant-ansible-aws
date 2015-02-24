@@ -11,5 +11,8 @@
 - name: Deploy configuration
   template: src=address.yaml.j2 dest=/var/lib/datastax-agent/conf/address.yaml owner=cassandra group=cassandra
 
+- name: Install sysstat as helper for DataStax agent
+  apt: name=sysstat state=present
+
 - name: Launch DataStax Agent for OpsCenter
   service: name=datastax-agent state=started

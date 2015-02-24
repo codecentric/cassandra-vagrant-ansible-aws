@@ -1,7 +1,17 @@
 ---
+# Dependencies
 - name: Install JNA
   apt: name=libjna-java update_cache=yes state=latest
-  
+ 
+- name: Install NTP daemon
+  apt: pkg=ntp state=present
+
+- name: Ensure NTP daemon autostart
+  service: name=ntp enabled=yes
+
+- name: Start NTP daemon
+  service: name=ntp state=started
+ 
 # Check whether cassandra is already installed
 - name: Detect existing Cassandra installation at /opt/cassandra
   stat: path=/opt/cassandra

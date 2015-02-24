@@ -37,4 +37,4 @@ This has at the moment only been tested under `Ubuntu 12.04.LTS`, so you should 
 
 ## TODO
 
-- NTP time client
+- DataStax agent can not connect to local node after authentication is setup...
