@@ -163,6 +163,8 @@ fi
 # Specifies the default port over which Cassandra will be available for
 # JMX connections.
 JMX_PORT="7199"
+#changed to have a separate RMI port available
+RMI_PORT="7198"
 
 
 # Here we create the arguments that will get passed to the jvm when
@@ -279,11 +281,13 @@ JVM_OPTS="$JVM_OPTS -Djava.net.preferIPv4Stack=true"
 #MX4J_ADDRESS="-Dmx4jaddress=127.0.0.1"
 #MX4J_PORT="-Dmx4jport=8081"
 
+#changed to require jmx authentication
+JVM_OPTS="$JVM_OPTS -Djava.rmi.server.hostname={{ ansible_ec2_public_hostname }}"
 JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.port=$JMX_PORT"
 JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.rmi.port=$JMX_PORT"
 JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.ssl=false"
 JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.authenticate=false"
-#JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.password.file=/etc/cassandra/jmxremote.password"
+JVM_OPTS="$JVM_OPTS -Dcom.sun.management.jmxremote.password.file=/opt/cassandra/conf/jmxremote.password"
 JVM_OPTS="$JVM_OPTS $MX4J_ADDRESS"
 JVM_OPTS="$JVM_OPTS $MX4J_PORT"
 JVM_OPTS="$JVM_OPTS $JVM_EXTRA_OPTS"

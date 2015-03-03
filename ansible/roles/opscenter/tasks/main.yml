@@ -7,7 +7,7 @@
 
 - name: Install DataStax OpsCenter
   apt: name=opscenter update_cache=yes
-
+  
 - name: Deploy configuration
   template: src=opscenterd.conf.j2 dest=/etc/opscenter/opscenterd.conf
 
@@ -17,5 +17,5 @@
 - name: Deploy pre-configured cluster configuration
   template: "src=cluster_config.conf.j2 dest=/etc/opscenter/clusters/{{ cluster_name }}.conf mode=600 owner=root group=root"
 
-- name: Launch OpsCenter
-  service: name=opscenterd state=started
+- name: (Re)start OpsCenter
+  service: name=opscenterd state=restarted

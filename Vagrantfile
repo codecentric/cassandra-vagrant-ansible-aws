@@ -103,6 +103,8 @@ Vagrant.configure(2) do |config|
         "cluster_name" => aws_config["cluster_name"],
         "cluster_username" => aws_config["cluster_username"],
         "cluster_password" => aws_config["cluster_password"],
+        "jmx_username" => aws_config["jmx_username"],
+        "jmx_password" => aws_config["jmx_password"],
         "datacenter_max_replication_string" => datacenter_and_nodes.map { |k,v| "'#{k}' : #{v}" }.join(", "),
         "random_new_password" => SecureRandom.hex
       }

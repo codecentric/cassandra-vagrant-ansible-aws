@@ -14,7 +14,8 @@ cluster_name: AWSCluster
 # Note that your password in the opscenter config file in the clear.
 # It is recommended to change this in a secure manner once the cluster is deployed.
 # Also note that the default cassandara:cassandra superuser is stripped of superuser rights
-# and assigned a random password. The username cannot be cassandra
+# and assigned a random password. The username cannot be cassandra. Neither username nor password
+# can contain spaces or tabs.
 cluster_username: cas
 cluster_password: 123
 

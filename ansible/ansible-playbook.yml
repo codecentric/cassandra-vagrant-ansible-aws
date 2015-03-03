@@ -8,3 +8,4 @@
   roles:
     - { role: cassandra, sudo: yes }
     - { role: datastax-agent, sudo: yes }
+    

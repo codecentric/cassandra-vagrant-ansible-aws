@@ -14,5 +14,8 @@
 - name: Install sysstat as helper for DataStax agent
   apt: name=sysstat state=present
 
+- name: Edit /etc/init.d/datastax-agent so that user is same as cassandra  
+  lineinfile: dest=/etc/init.d/datastax-agent regexp="^USER=\"cassandra\"$" line="USER=\"ubuntu\""
+
 - name: Launch DataStax Agent for OpsCenter
-  service: name=datastax-agent state=started
+  service: name=datastax-agent state=restarted
