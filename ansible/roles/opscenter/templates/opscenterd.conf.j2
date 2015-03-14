@@ -14,6 +14,10 @@ interface = {{ ansible_default_ipv4.address }}
 #ssl_certfile = /var/lib/opscenter/ssl/opscenter.pem
 #ssl_port = 8443
 
+[agents]
+#changed to push public ip to agents instead of private one
+reported_interface = {{ ansible_ssh_host }}
+
 [logging]
 # level may be TRACE, DEBUG, INFO, WARN, or ERROR
 #level = INFO

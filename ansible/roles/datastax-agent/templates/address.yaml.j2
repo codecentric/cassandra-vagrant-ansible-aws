@@ -2,3 +2,6 @@ stomp_interface: {{ hostvars['cassandra-opscenter']['ansible_ssh_host'] }}
 local_interface: {{ ansible_ssh_host }}
 agent_rpc_interface: {{ ansible_default_ipv4.address }}
 agent_rpc_broadcast_address: {{ ansible_ssh_host }}
+cassandra_install_location: /opt/cassandra
+cassandra_conf: /opt/cassandra/conf/cassandra.yaml
+runs_sudo: 0

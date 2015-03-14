@@ -1,21 +1,42 @@
 ---
-- name: Add DataStax repository
-  apt_repository: repo='deb http://debian.datastax.com/community stable main' state=present
-  
-- name: Add the DataStax repository key to aptitude trusted keys
-  apt_key: url=http://debian.datastax.com/debian/repo_key state=present
+- name: Detect existing installation at /opt/datastax-agent
+  stat: path=/opt/datastax-agent
+  register: state_of_agent_installation
 
-- name: Install DataStax Agent for OpsCenter
-  apt: name=datastax-agent update_cache=yes
+# Cassandra download and installation
+- name: Download datastax-agent
+  get_url: url=http://downloads.datastax.com/community/datastax-agent-5.1.0.tar.gz dest=/tmp/datastax-agent.tar.gz
+  when: state_of_agent_installation.stat.isdir is undefined
+
+- name: Unpack datastax-agent
+  unarchive: src=/tmp/datastax-agent.tar.gz dest=/opt copy=no
+  when: state_of_agent_installation.stat.isdir is undefined
+
+- name: Link to /opt/datastax-agent
+  file: "src=/opt/datastax-agent-5.1.0 dest=/opt/datastax-agent state=link owner=ubuntu group=ubuntu"
+  when: state_of_agent_installation.stat.isdir is undefined
+
+# Folder setup
+- name: Create log directories
+  file: "path={{ item }} state=directory owner=ubuntu group=ubuntu"
+  with_items:
+    - /var/log/datastax-agent
 
 - name: Deploy configuration
-  template: src=address.yaml.j2 dest=/var/lib/datastax-agent/conf/address.yaml owner=cassandra group=cassandra
+  template: src=address.yaml.j2 dest=/opt/datastax-agent/conf/address.yaml owner=ubuntu group=ubuntu
 
 - name: Install sysstat as helper for DataStax agent
   apt: name=sysstat state=present
 
-- name: Edit /etc/init.d/datastax-agent so that user is same as cassandra  
-  lineinfile: dest=/etc/init.d/datastax-agent regexp="^USER=\"cassandra\"$" line="USER=\"ubuntu\""
-
-- name: Launch DataStax Agent for OpsCenter
+# Owner/Group Security
+- name: Set user/group on installation
+  file: path=/opt/datastax-agent-5.1.0 recurse=yes owner=ubuntu group=ubuntu
+  
+- name: Deploy init.d script
+  template: src=datastax-agent.j2 dest=/etc/init.d/datastax-agent mode=u=rwx,g=rx,o=rx
+  
+- name: Register datastax-agent service for boot-time launch
+  shell: update-rc.d datastax-agent defaults
+  
+- name: Launch agent
   service: name=datastax-agent state=restarted

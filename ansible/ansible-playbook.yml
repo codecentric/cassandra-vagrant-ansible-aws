@@ -7,5 +7,5 @@
 - hosts: cassandra_nodes
   roles:
     - { role: cassandra, sudo: yes }
-    - { role: datastax-agent, sudo: yes }
+#    - { role: datastax-agent, sudo: yes }
     

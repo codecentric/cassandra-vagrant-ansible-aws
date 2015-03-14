@@ -10,13 +10,13 @@
 ### END INIT INFO
 
 name=`basename $0`
-pid_file="/opt/cassandra/$name.pid"
+pid_file="/opt/cassandra/cassandra.pid"
 stdout_log="/var/log/cassandra/stdout.log"
 stderr_log="/var/log/cassandra/stderr.log"
 
 dir="/opt/cassandra/bin"
 user="ubuntu"
-cmd="./cassandra -p $pidfile"
+cmd="./cassandra -p $pid_file"
 
 get_pid() {
     cat "$pid_file"
@@ -34,7 +34,8 @@ case "$1" in
         echo "Starting $name"
         cd "$dir"
         sudo -u "$user" $cmd >> "$stdout_log" 2>> "$stderr_log" &
-        echo $! > "$pid_file"
+        sleep 10 # wait for pid file being created
+        #echo $! > "$pid_file"
         if ! is_running; then
             echo "Unable to start, see $stdout_log and $stderr_log"
             exit 1
@@ -45,17 +46,8 @@ case "$1" in
     if is_running; then
         echo -n "Stopping $name.."
         kill `get_pid`
-        for i in {1..10}
-        do
-            if ! is_running; then
-                break
-            fi
-
-            echo -n "."
-            sleep 1
-        done
-        echo
-
+        sleep 10
+        
         if is_running; then
             echo "Not stopped; may still be shutting down or shutdown may have failed"
             exit 1

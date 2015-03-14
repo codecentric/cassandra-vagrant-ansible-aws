@@ -17,4 +17,3 @@ seed_hosts = {% for host in groups['cassandra_nodes'] %}{{ hostvars[host]['ansib
 
 api_port = 9160
 password = {{ cluster_password }}
-install_location = /opt/cassandra
