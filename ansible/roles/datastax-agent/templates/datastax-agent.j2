@@ -1,0 +1,85 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          cassandra
+# Required-Start:    $network $remote_fs $syslog
+# Required-Stop:     $network $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start cassandra at boot timedatastax-agent
+# Description:       Enable service provided by datastax-agent.
+### END INIT INFO
+
+name=`basename $0`
+stdout_log="/var/log/datastax-agent/stdout.log"
+stderr_log="/var/log/datastax-agent/stderr.log"
+
+dir="/opt/datastax-agent/bin"
+user="ubuntu"
+cmd="./datastax-agent"
+
+get_pid() {
+    pgrep datastax-agent
+}
+
+is_running() {
+    ps `get_pid` > /dev/null 2>&1
+}
+
+case "$1" in
+    start)
+    if is_running; then
+        echo "Already started"
+    else
+        echo "Starting $name"
+        cd "$dir"
+        sudo -u "$user" $cmd >> "$stdout_log" 2>> "$stderr_log" &
+        sleep 10 # wait for pid file being created
+        #echo $! > "$pid_file"
+        if ! is_running; then
+            echo "Unable to start, see $stdout_log and $stderr_log"
+            exit 1
+        fi
+    fi
+    ;;
+    stop)
+    if is_running; then
+        echo -n "Stopping $name.."
+        kill `get_pid`
+        sleep 10
+        
+        if is_running; then
+            echo "Not stopped; may still be shutting down or shutdown may have failed"
+            exit 1
+        else
+            echo "Stopped"
+            if [ -f "$pid_file" ]; then
+                rm "$pid_file"
+            fi
+        fi
+    else
+        echo "Not running"
+    fi
+    ;;
+    restart)
+    $0 stop
+    if is_running; then
+        echo "Unable to stop, will not attempt to start"
+        exit 1
+    fi
+    $0 start
+    ;;
+    status)
+    if is_running; then
+        echo "Running"
+    else
+        echo "Stopped"
+        exit 1
+    fi
+    ;;
+    *)
+    echo "Usage: $0 {start|stop|restart|status}"
+    exit 1
+    ;;
+esac
+
+exit 0
